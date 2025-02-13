@@ -1,0 +1,382 @@
+@font-face {
+    font-family: 'Alien';
+    src: url(/font/Alien\ Resurrection.ttf);
+}
+
+@font-face {
+    font-family: 'Starjedi';
+    src: url(/font/Starjedi.ttf);
+}
+
+.title {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+h1 {
+    font-size: 3em;
+    color: #FFE81F;
+    text-shadow: 2px 2px 2px #000;
+    font-family: 'Starjedi', sans-serif;
+    word-spacing: 10px;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-image: url('https://i.postimg.cc/RCKVWy82/background.png');
+    font-family: Arial, Helvetica, sans-serif;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    position: relative;
+    margin: 0;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+body::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.3);
+    /* Couche noire semi-transparente */
+    z-index: -1;
+    /* Place la couche derrière le contenu */
+}
+
+.mainMenu {
+    position: absolute;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    padding: 32px;
+    border: #FFE81F 2px solid;
+    border-radius: 14px;
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+.hud {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0 16px;
+    font-family: 'Alien', sans-serif;
+    color: #FFE81F;
+    background-color: #000;
+    border-bottom: 1px solid #FFE81F;
+    font-size: 16px;
+    gap: 16px;
+    position: absolute;
+    top: 0;
+}
+
+.scoreboard {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    border: #FFE81F 2px solid;
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 32px;
+    border-radius: 14px;
+
+    h1 {
+        margin: 0;
+    }
+
+    ul {
+        width: 100%;
+        list-style-type: none;
+        padding: 0;
+        color: #FFE81F;
+        font-family: "starjedi", sans-serif;
+    }
+}
+
+.gameArea {
+    display: grid;
+    place-items: center;
+    height: 600px;
+    width: 1000px;
+    border: #FFE81F 2px solid;
+    box-sizing: border-box;
+    opacity: 1;
+    overflow: hidden;
+    position: relative;
+}
+
+.dialogue {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.6);
+    max-width: 80%;
+    border: #FFE81F 2px solid;
+    color: #FFE81F;
+    border-radius: 14px;
+    padding: 24px;
+    margin: 8px;
+    gap: 8px;
+}
+
+.dialogue::after {
+    content: " 🢓";
+    transform: translateY(40%);
+}
+
+.gameArea::before {
+    content: "";
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: var(--bg-img, url('https://i.postimg.cc/htdVFFpc/bg-Main-Menu.jpg'));
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    filter: brightness(60%);
+    /* Applique un filtre */
+    z-index: -1;
+    /* Place derrière le contenu */
+}
+
+.player {
+    background: url(./assets/player.png);
+    background-size: cover;
+    background-clip: border-box;
+    background-position: center;
+    will-change: transform;
+}
+
+@keyframes hit {
+
+    0%,
+    100% {
+        filter: brightness(1.5) sepia(1) hue-rotate(-50deg) saturate(1.5);
+        /* Apply red effect */
+    }
+
+    50% {
+        filter: none;
+        /* Remove the effect at the halfway point */
+    }
+}
+
+.player.hit {
+    animation: hit 0.5s ease-in-out 0s 1;
+    /* Blink twice with a duration of 1s per blink */
+}
+
+.enemy {
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    position: absolute;
+}
+
+.shot {
+    width: 4px;
+    height: 20px;
+    background: url(./assets/laser2.png);
+    background-size: cover;
+    position: absolute;
+}
+
+.enemyContainer {
+    display: grid;
+    grid-template-columns: repeat(10, 60px);
+    grid-template-rows: repeat(5, 40px);
+    gap: 15px;
+    transition: left 0.1s ease, top 0.1s ease;
+}
+
+
+
+.lifeContainer {
+    display: flex;
+    gap: 5px;
+}
+
+.life {
+    width: 20px;
+    height: 20px;
+}
+
+.life.hit {
+    opacity: 0;
+    transition: opacity 0.5s;
+}
+
+
+
+
+footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #Fff;
+    background-color: #000;
+    height: 32px;
+
+}
+
+.enemyShot {
+    width: 4px;
+    height: 20px;
+    background: url(./assets/Laser.png);
+    background-size: cover;
+    position: absolute;
+}
+
+.menuPause {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 10px;
+    border: #FFE81F 2px solid;
+    border-radius: 14px;
+    align-items: center;
+    padding: 32px;
+    background-color: rgba(0, 0, 0, 0.6);
+
+    h1 {
+        margin: 0;
+    }
+}
+
+.btn {
+    border: 2px solid #FFE81F;
+    border-radius: 10px;
+    background-color: transparent;
+    color: #FFE81F;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    font-family: 'Alien', sans-serif;
+    gap: 5px;
+}
+
+.selected {
+    background-color: #FFE81F;
+    color: #000;
+}
+
+.gameOver {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 10px;
+    border: #FFE81F 2px solid;
+    border-radius: 14px;
+    align-items: center;
+    padding: 32px;
+    background-color: rgba(0, 0, 0, 0.6);
+
+    h1 {
+        margin: 0;
+    }
+}
+
+.timer {
+    display: flex;
+}
+
+.win {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 10px;
+    border: #FFE81F 2px solid;
+    border-radius: 14px;
+    align-items: center;
+    padding: 32px;
+    background-color: rgba(0, 0, 0, 0.6);
+
+    h1 {
+        margin: 0;
+    }
+
+    .scoreDiv {
+        display: flex;
+        gap: 4px;
+        flex-direction: column;
+        align-items: left;
+
+        h2,
+        h3 {
+            margin: 0;
+        }
+
+        h1 {
+            align-self: center;
+        }
+    }
+}
+
+h2 {
+    font-family: 'starjedi', sans-serif;
+    font-size: 24px;
+    color: #FFE81F;
+    text-shadow: 2px 2px 2px #000;
+}
+
+h3 {
+    font-family: 'starjedi', sans-serif;
+    font-size: 16px;
+    color: #FFE81F;
+    text-shadow: 2px 2px 2px #000;
+}
+
+.howToPlay {
+    background: #161616;
+    width: 1000px;
+    box-sizing: border-box;
+    border: #FFE81F 2px solid;
+    border-top: none;
+    color: #FFE81F;
+    display: flex;
+    justify-content: space-around;
+    gap: 16px;
+    padding: 12px;
+    vertical-align: middle;
+
+    span {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+    }
+
+}
+
+.confirmation {
+    position: absolute;
+    z-index: 101;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding: 32px;
+    border: #FFE81F 2px solid;
+    border-radius: 14px;
+    background-color: rgba(0, 0, 0, 1);
+
+}
