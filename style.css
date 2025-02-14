@@ -114,6 +114,7 @@ body::before {
     opacity: 1;
     overflow: hidden;
     position: relative;
+    will-change: background;
 }
 
 .dialogue {
@@ -154,8 +155,9 @@ body::before {
 
 .player {
     background: url(./assets/player.png);
-    background-size: cover;
+    background-size: contain;
     background-clip: border-box;
+    background-repeat: no-repeat;
     background-position: center;
     will-change: transform;
 }
@@ -184,6 +186,7 @@ body::before {
     background-repeat: no-repeat;
     background-position: center;
     position: absolute;
+    will-change: transform;
 }
 
 .shot {
@@ -192,6 +195,7 @@ body::before {
     background: url(./assets/laser2.png);
     background-size: cover;
     position: absolute;
+    will-change: left, bottom, top;
 }
 
 .enemyContainer {
@@ -201,6 +205,7 @@ body::before {
     gap: 15px;
     transition: left 0.1s ease, top 0.1s ease;
 }
+
 
 
 
@@ -241,6 +246,7 @@ footer {
     background: url(./assets/Laser.png);
     background-size: cover;
     position: absolute;
+    will-change: left, bottom, top;
 }
 
 .menuPause {

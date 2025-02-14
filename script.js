@@ -2,7 +2,7 @@ import dialogues from "./dialogues.js";
 import tileMap from "./tileMap.js";
 let isGameOver = true;
 let isInConfirmation = false;
-const PLAYER_WIDTH = 50;
+const PLAYER_WIDTH = 60;
 const ScoreByType = {
   2: 200,
   3: 300,
@@ -45,6 +45,7 @@ function createPlayer(x, y, tileSize = 50) {
   player = document.createElement("div");
   player.classList.add("player");
   player.style.position = "absolute";
+  player.style.left = 0;
   player.style.width = `${tileSize}px`;
   player.style.height = `${tileSize}px`;
   gameArea.appendChild(player);
@@ -52,10 +53,8 @@ function createPlayer(x, y, tileSize = 50) {
   let playerY = y * tileSize;
 
   // Appliquer la position
-  player.style.left = `${playerX}px`;
-  player.style.top = `${playerY}px`;
-
-  position = { left: parseInt(player.style.left), bottom: 55 };
+  player.style.transform = `translateX(${gameAreaRect.width/2}px) translateY(${gameAreaRect.height/2 - 55}px)`;
+  position = { left: parseInt(gameAreaRect.width/2), bottom: gameAreaRect.height/2 - 55 };
 }
 // gameArea  width and height
 let gameArea = document.getElementsByClassName("gameArea")[0];
@@ -73,6 +72,7 @@ function initializeLives() {
   lifeContainer.classList.add("lifeContainer");
   lifeContainer.innerText = "Lives: ";
 
+
   for (let i = 0; i < totalLives; i++) {
     let life = document.createElement("img");
     life.src = "assets/heartIcon.png";
@@ -88,6 +88,28 @@ function initializeLevelHud() {
   levelDisplay.innerText = `Level: ${actualLevel}`;
   hud.appendChild(levelDisplay);
 }
+// function initializeEnemies() {
+//   enemyContainer = document.createElement("div");
+//   enemyContainer.classList.add("enemyContainer");
+//   gameArea.appendChild(enemyContainer);
+//   enemyContainerRect = enemyContainer.getBoundingClientRect();
+//   enemyContainer.style.position = "absolute";
+//   enemyContainer.style.left = gameAreaRect.width / 2 - enemyContainerRect.width / 2 + "px";
+//   enemyContainer.style.top = "50px";
+//   gameArea.style.position = "relative";
+//   for (let i = 0; i < 50; i++) {
+//     let enemy = createEnemy();
+//     enemy.left =
+//       60 * (i % 10) + 15 * (i % 10) + parseInt(enemyContainer.style.left) + "px";
+//     enemy.top =
+//       40 * Math.floor(i / 10) +
+//       15 * Math.floor(i / 10) +
+//       parseInt(enemyContainer.style.top);
+//     enemy.index = i;
+//     enemies.push(enemy);
+//   }
+
+// }
 // Pause menu
 let menuPause = document.createElement("div");
 menuPause.classList.add("menuPause", "menu");
@@ -95,6 +117,7 @@ menuPause.style.zIndex = "100";
 menuPause.innerHTML = `<h1>Pause</h1><button class="btn selected">Continue</button><button class="btn">Restart</button><button class="btn">Menu</button>`;
 
 // Event for pause the game
+let isPaused = false;
 let Pause = addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
     if (isInConfirmation) return;
@@ -105,8 +128,10 @@ let Pause = addEventListener("keydown", (e) => {
 function createEnemy(x, y, tileSize = 50, type = 2) {
   let enemy = document.createElement("div");
   enemy.classList.add("enemy");
-  enemy.style.left = x + "px";
-  enemy.style.top = y + "px";
+  enemy.style.position = "absolute";
+  enemy.style.left = 0;
+  enemy.style.top = 0;
+  enemy.style.transform = `translateX(${x}px) translateY(${y}px)`;
   enemy.style.width = tileSize + "px";
   enemy.style.height = tileSize + "px";
   enemy.style.backgroundImage = `url('assets/enemy${type - 1}.png')`;
@@ -136,6 +161,7 @@ function handleMovement(delta) {
     );
     moved = true;
   }
+console.log(position.left);
 
   if (keysPressed["ArrowLeft"] && position.left > 0) {
     position.left = Math.max(position.left - playerSpeed * (delta / 1000), 0);
@@ -147,38 +173,39 @@ function handleMovement(delta) {
   }
 
   if (moved) {
-    player.style.left = position.left + "px";
+    console.log("coucou");
+    
+    player.style.transform = `translateX(${position.left}px) translateY(${position.bottom}px)`;
   }
 }
 
 const FPS = 60; // Nombre d'images par seconde
 const frameDuration = 1000 / FPS; // Durée d'une frame en millisecondes (~16,66 ms pour 60 FPS)
 let lastTime = 0; // Dernier timestamp traité
+let timeSinceLastFrame = 0; // Temps écoulé depuis le dernier rendu
 
-let timeSinceLastFrame = 0;
-
+let isMoving = false;
 const gameLoop = (timestamp) => {
   if (!isInMenu) {
-    let delta = timestamp - lastTime;
-    timeSinceLastFrame += delta;
-
+    const deltaTime = timestamp - lastTime;
+    timeSinceLastFrame+=deltaTime;
     if (timeSinceLastFrame >= frameDuration) {
       lastTime = timestamp;
-      timeSinceLastFrame %= frameDuration; // Conserver l'excédent pour éviter de perdre des frames
-
+      timeSinceLastFrame %= frameDuration;
       handleShot();
-      moveEnemies(tileSize);
-      handleMovement(frameDuration); // Toujours avec frameDuration pour garder un rythme stable
+      if(!isMoving){
+        moveEnemies(tileSize);
+      }
+      isMoving = !isMoving
+      handleMovement(frameDuration);
     }
-
-    animationFrameId = requestAnimationFrame(gameLoop);
   }
+  requestAnimationFrame(gameLoop);
 };
-
 function initializeGame() {
   mainMenu();
-  // menuControls();
   enableMenuControls();
+  gameLoop();
 }
 initializeGame();
 
@@ -200,8 +227,6 @@ function startGame(level) {
   initializeHud();
   clearInterval(enemyIntervalShoot);
   randomEnemyShots();
-
-  gameLoop(0);
 }
 
 function initializeMap(level) {
@@ -227,10 +252,16 @@ function initializeMap(level) {
 }
 
 function startLevel(level) {
+  if(level === 1){
+    score = 0;
+    livesLeft = 3;
+  }
+  isInMenu = true
   initializeBackground(level);
   if (dialogues[level]) {
     dialogueIndex = 0;
     displayDialogues(dialogues[level], () => {
+      isInMenu = false;
       startGame(level);
     });
   } else {
@@ -292,7 +323,7 @@ function togglePause() {
       clearInterval(interval);
     });
     gameArea.appendChild(menuPause);
-    cancelAnimationFrame(animationFrameId);
+    // cancelAnimationFrame(animationFrameId);
     pauseShots();
     menu = menuPause;
     btns = Array.from(menuPause.getElementsByClassName("btn"));
@@ -304,7 +335,7 @@ function togglePause() {
     gameArea.removeChild(menuPause);
     resumeShots();
     moveEnemies(enemyDirection === "right" ? false : true);
-    requestAnimationFrame(gameLoop);
+    // requestAnimationFrame(gameLoop);
   }
 }
 function initializeBackground(level) {
@@ -341,7 +372,7 @@ const fireShot = () => {
   shot.classList.add("shot");
   gameArea.appendChild(shot);
   shot.style.left = position.left + PLAYER_WIDTH / 2 - 2 + "px";
-  shot.style.bottom = position.bottom + PLAYER_WIDTH + "px";
+  shot.style.bottom =PLAYER_WIDTH + "px";
   let shotRect = shot.getBoundingClientRect();
   let shotLoop = setInterval(() => {
     shotDeplacement(shot, "up");
@@ -407,21 +438,22 @@ const enemyShot = () => {
   let minDistance = Infinity;
   let playerRect = player.getBoundingClientRect();
   enemies.forEach((enemy, index) => {
-    let enemyRect = enemy.div.getBoundingClientRect();
-    let distance = Math.abs(enemyRect.left - playerRect.left);
+    let distance = Math.abs(enemy.x - position.left);
     if (distance <= minDistance) {
       minDistance = distance;
       closestEnemy = index;
     }
   });
   let enemy = enemies[closestEnemy];
+  
+  
 
   const enemyShot = document.createElement("div");
   enemyShot.classList.add("enemyShot");
   gameArea.appendChild(enemyShot);
   playSound("sounds/laser.wav");
-  enemyShot.style.left = parseInt(enemy.div.style.left) + tileSize / 2 + "px";
-  enemyShot.style.top = parseInt(enemy.div.style.top) + tileSize / 2 + "px";
+  enemyShot.style.left = parseInt(enemy.x) + tileSize / 2 + "px";
+  enemyShot.style.top = parseInt(enemy.y) + tileSize / 2 + "px";
 
   let enemyShotRect = enemyShot.getBoundingClientRect();
 
@@ -561,13 +593,12 @@ function randomEnemyShots() {
 }
 
 // Handle enemy movement
-let moveRight = true; // Indique si les ennemis se déplacent à droite
-let moveLeft = false; // Indique si les ennemis se déplacent à gauche
 
 function moveEnemies(tileSize) {
   const tileWidth = tileSize;
   const gameAreaRect = gameArea.getBoundingClientRect(); // Zone de jeu
-
+  
+  
   // Calculer la position des ennemis à chaque mouvement
   let bounds = getActiveEnemyBounds(); // Récupérer les coordonnées max et min des ennemis
 
@@ -576,6 +607,7 @@ function moveEnemies(tileSize) {
     bounds.maxX + tileWidth >= gameAreaRect.width &&
     enemyDirection === "right"
   ) {
+    
     moveEnemiesDown();
     enemyDirection = "left"; // Changer la direction vers la gauche
   }
@@ -593,15 +625,16 @@ function moveEnemies(tileSize) {
 
 function checkEnemiesCollision() {
   enemies.forEach((enemy) => {
+    let enemyRect = enemy.div.getBoundingClientRect();
     if (
       isCollision(
         player.getBoundingClientRect(),
-        enemy.div.getBoundingClientRect()
+        enemyRect
       )
     ) {
       gameover();
     }
-    if (parseInt(enemy.div.style.top) + tileSize >= gameAreaRect.height) {
+    if (parseInt(enemyRect.top) + tileSize >= gameAreaRect.height) {
       gameover();
     }
   });
@@ -609,36 +642,42 @@ function checkEnemiesCollision() {
 // Fonction pour déplacer tous les ennemis horizontalement
 function moveEnemiesHorizontally(amount) {
   enemies.forEach((enemy) => {
-    let currentLeft = parseInt(enemy.div.style.left);
-    enemy.div.style.left = currentLeft + amount + "px"; // Déplacement horizontal
+    
+    enemy.div.style.transform = `translateX(${enemy.x + amount}px) translateY(${enemy.y}px)`;
+    enemy.x += amount;
   });
 }
 
 // Fonction pour déplacer tous les ennemis d'une ligne vers le bas
 function moveEnemiesDown() {
   enemies.forEach((enemy) => {
-    let currentTop = parseInt(enemy.div.style.top);
-    enemy.div.style.top = currentTop + 30 + "px"; // Déplacement vertical vers le bas
+    enemy.div.style.transform = `translateX(${enemy.x}px) translateY(${enemy.y+20}px)`;
+    enemy.y += 20;
   });
 }
 
+// document.addEventListener("keydown", (e) => {
+//   if(e.key==="m"){
+//     moveEnemies();
+//   }
+// });
 function getActiveEnemyBounds() {
   let minX = Infinity;
   let minY = Infinity;
   let maxX = -Infinity;
   let maxY = -Infinity;
   enemies.forEach((enemy) => {
-    if (parseInt(enemy.div.style.left) < minX) {
-      minX = parseInt(enemy.div.style.left);
+    if (enemy.x < minX) {
+      minX = enemy.x;
     }
-    if (parseInt(enemy.div.style.top) < minY) {
-      minY = parseInt(enemy.div.style.top);
+    if (enemy.y < minY) {
+      minY = enemy.y;
     }
-    if (parseInt(enemy.div.style.left) > maxX) {
-      maxX = parseInt(enemy.div.style.left);
+    if (enemy.x > maxX) {
+      maxX = enemy.x;
     }
-    if (parseInt(enemy.div.style.top) > maxY) {
-      maxY = parseInt(enemy.div.style.top);
+    if (enemy.y > maxY) {
+      maxY = enemy.y;
     }
   });
   return { minX, minY, maxX, maxY };
@@ -665,9 +704,9 @@ function gameover() {
   isGameOver = true;
   isInMenu = true;
   if (!gamePaused) {
-    cancelAnimationFrame(animationFrameId);
+    // cancelAnimationFrame(animationFrameId);
     //Get the name of the player
-    let playerName = prompt("Enter your name : ");
+    let playerName = "Dylan"
     if (playerName === null || playerName === "") {
       playerName = "Player";
     }
@@ -757,7 +796,7 @@ function confirmationMessage(message, callback, ...args) {
   btns[0].addEventListener("click", () => {
     gameArea.removeChild(confirmation);
     isInConfirmation = false;
-    callback(args);
+    callback(...args);
   });
   btns[1].addEventListener("click", () => {
     menu = lastMenu;
@@ -793,7 +832,7 @@ function winGame() {
     win.style.zIndex = "100";
     win.style.position = "absolute";
     gameArea.appendChild(win);
-    cancelAnimationFrame(animationFrameId);
+    // cancelAnimationFrame(animationFrameId);
     activeIntervals.forEach(clearInterval);
     clearInterval(enemyIntervalShoot);
 
@@ -819,7 +858,7 @@ function Timer() {
   timerDisplay.classList.add("timer");
   timerDisplay.innerText = `Time: ${timer}`;
   hud.appendChild(timerDisplay);
-  const timerInterval = setInterval(() => {
+  const timerInterval = setInterval(() => {    
     if (!gamePaused && !isGameOver) {
       timer++;
       timerDisplay.innerText = `Time: ${timer}`;
